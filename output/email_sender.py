@@ -1,7 +1,9 @@
 import logging
 import smtplib
+from email.header import Header
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from email.utils import formataddr
 from datetime import datetime
 
 logger = logging.getLogger(__name__)
@@ -17,8 +19,8 @@ def send_briefing(html_body, config):
     date_str = datetime.now().strftime("%Y-%m-%d")
 
     msg = MIMEMultipart("alternative")
-    msg["Subject"] = f"{subject_prefix} — {date_str}"
-    msg["From"] = email_cfg["sender"]
+    msg["Subject"] = Header(f"{subject_prefix} — {date_str}", "utf-8")
+    msg["From"] = formataddr((None, email_cfg["sender"]))
     msg["To"] = email_cfg["recipient"]
 
     msg.attach(MIMEText(html_body, "html", "utf-8"))
