@@ -8,7 +8,7 @@
 
 | 软件 | 下载 | 说明 |
 |------|------|------|
-| **Python** ≥ 3.9 | https://python.org → Download → 勾选 "Add to PATH" | 安装后终端输入 `python --version` 验证 |
+| **Python** ≥ 3.9 | https://python.org → Download → 勾选 "Add to PATH" | 安装后终端输入 `py --version` 验证 (Windows 用 `py` 而不是 `python`) |
 | **QQ NT 桌面版** | https://im.qq.com → Windows版 | 必须是新版 Electron QQ，不是 tim/轻聊版 |
 
 ---
@@ -59,7 +59,7 @@ cd begin-ing
 1. 打开项目文件夹（第一步解压出的 `begin-ing-main`）
 2. 点击文件夹顶部的**地址栏**，删掉现有路径，输入 `powershell`
 3. 回车 → 弹出一个蓝底白字的窗口
-4. 在窗口里输入 `python setup.py`，回车
+4. 在窗口里输入 `py setup.py`，回车
 
 ```
 ┌─────────────────────────────────────────────┐
@@ -80,7 +80,7 @@ cd begin-ing
 在终端中执行：
 
 ```bash
-python setup.py
+py setup.py
 ```
 ```
 
@@ -186,7 +186,7 @@ schtasks /change /tn "DailyBriefing" /st 21:00    # 改为晚上9点
 ```bash
 crontab -e
 # 添加下面这行（替换为你的实际路径）：
-0 19 * * * cd /home/xxx/begin-ing && python daily_briefing.py >> logs/cron.log 2>&1
+0 19 * * * cd /home/xxx/begin-ing && py daily_briefing.py >> logs/cron.log 2>&1
 ```
 
 ---
@@ -196,19 +196,19 @@ crontab -e
 ### 手动运行一次
 
 ```bash
-python daily_briefing.py
+py daily_briefing.py
 ```
 
 ### 只生成简报不发邮件
 
 ```bash
-python daily_briefing.py --no-email
+py daily_briefing.py --no-email
 ```
 
 ### 发邮件前预览 HTML
 
 ```bash
-python daily_briefing.py --no-email --dry-run
+py daily_briefing.py --no-email --dry-run
 # 打开 preview.html 查看效果
 ```
 
