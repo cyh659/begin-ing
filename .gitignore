@@ -9,15 +9,23 @@ venv/
 __pycache__/
 *.pyc
 *.pyo
+*.egg-info/
+dist/
 
 # 日志
 logs/
 
 # 临时文件
 preview.html
-test_zhihu.py
-test_pipeline.py
+test_*.py
 
 # IDE
 .vscode/
 .idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# NapCat 缓存 (setup.py 下载)
+.napcat/
