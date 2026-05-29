@@ -98,6 +98,29 @@ def install_napcat():
         print("  非 Windows 系统，跳过自动安装。请手动安装 NapCatQQ。")
         return None
 
+    # Check if already installed
+    napcat_dir = Path(os.path.expanduser("~")) / ".napcat"
+    info_path = napcat_dir / "install_info.json"
+    # Also check common existing install paths
+    if info_path.exists():
+        print("  NapCatQQ 已安装，跳过下载。")
+        with open(info_path) as f:
+            info = json.load(f)
+        print(f"  安装路径: {info.get('extract_dir', 'unknown')}")
+        return info.get("extract_dir")
+    if Path(r"D:\NapCat\NapCat.44498.Shell").exists():
+        print("  NapCatQQ 已安装 (D:\\NapCat)，跳过下载。")
+        return r"D:\NapCat\NapCat.44498.Shell"
+    # Check if API already running
+    import requests
+    try:
+        r = requests.post("http://localhost:3000/get_login_info", json={}, timeout=3)
+        if r.status_code == 200 and r.json().get("retcode") == 0:
+            print("  NapCat API 已在运行 (端口3000)，跳过安装。")
+            return "already_running"
+    except Exception:
+        pass
+
     qq_path = find_qq_nt()
     if not qq_path:
         print("  未检测到 QQ NT，跳过 NapCat 自动安装。")
@@ -139,7 +162,6 @@ def install_napcat():
         return None
 
     # Download
-    napcat_dir = Path(os.path.expanduser("~")) / ".napcat"
     napcat_dir.mkdir(exist_ok=True)
 
     print(f"  下载 NapCatQQ ({release.get('tag_name', 'latest')})...")
@@ -167,7 +189,11 @@ def install_napcat():
     if extract_dir.exists():
         shutil.rmtree(extract_dir)
     shutil.unpack_archive(str(zip_path), str(extract_dir))
-    zip_path.unlink()  # Remove zip
+    time.sleep(1)
+    try:
+        zip_path.unlink()
+    except Exception:
+        pass
 
     # Find napcat config directory
     napcat_config_dir = None
@@ -355,22 +381,9 @@ def test_email():
 
 
 def main():
-    # Absolute minimal startup — confirm terminal works before anything else
     print("", flush=True)
     print("  Starting setup...", flush=True)
     print("", flush=True)
-
-    # Force UTF-8 output to avoid UnicodeEncodeError on Windows GBK terminals
-    if hasattr(sys.stdout, 'reconfigure'):
-        try:
-            sys.stdout.reconfigure(encoding='utf-8', errors='replace')
-        except Exception:
-            pass
-    if hasattr(sys.stderr, 'reconfigure'):
-        try:
-            sys.stderr.reconfigure(encoding='utf-8', errors='replace')
-        except Exception:
-            pass
 
     print_banner()
 
