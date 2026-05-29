@@ -34,11 +34,11 @@ briefing:
 
 
 def print_banner():
-    print(r"""
-  ╔══════════════════════════════════╗
-  ║   QQ群每日简报 — 一键安装向导    ║
-  ╚══════════════════════════════════╝
-  """)
+    print("")
+    print("  ========================================")
+    print("     QQ Group Daily Briefing - Setup")
+    print("  ========================================")
+    print("")
 
 
 def check_python():
@@ -47,7 +47,7 @@ def check_python():
     if v.major < 3 or (v.major == 3 and v.minor < 9):
         print("错误: 需要 Python 3.9+，当前版本: {}.{}".format(v.major, v.minor))
         sys.exit(1)
-    print(f"  Python {v.major}.{v.minor}.{v.micro} ✓")
+    print(f"  Python {v.major}.{v.minor}.{v.micro} [OK]")
 
 
 def install_deps():
@@ -56,7 +56,7 @@ def install_deps():
         subprocess.check_call(
             [sys.executable, "-m", "pip", "install", "-r", "requirements.txt", "--quiet"]
         )
-        print("  依赖安装完成 ✓")
+        print("  依赖安装完成 [OK]")
     except subprocess.CalledProcessError as e:
         print(f"  依赖安装失败: {e}")
         print("  请检查网络连接后重试，或手动执行:")
@@ -67,7 +67,7 @@ def install_deps():
 def detect_os():
     print("[3/7] 检测操作系统...")
     if sys.platform == "win32":
-        print("  Windows ✓ — 支持全自动安装")
+        print("  Windows [OK] — 支持全自动安装")
     elif sys.platform == "darwin":
         print("  macOS — 当前仅支持手动安装 NapCat，详见 README")
         print("  继续配置生成...")
@@ -211,7 +211,7 @@ def install_napcat():
     with open(napcat_info_path, "w") as f:
         json.dump({"extract_dir": str(extract_dir), "version": release.get("tag_name")}, f)
 
-    print(f"  NapCatQQ 安装完成 ✓")
+    print(f"  NapCatQQ 安装完成 [OK]")
     print(f"  安装路径: {extract_dir}")
     return str(extract_dir)
 
@@ -252,7 +252,7 @@ def config_wizard():
     config_path = ROOT / "config.yaml"
     with open(config_path, "w", encoding="utf-8") as f:
         f.write(config_content)
-    print(f"\n  配置已保存到 {config_path} ✓")
+    print(f"\n  配置已保存到 {config_path} [OK]")
 
 
 def launch_napcat_and_verify():
@@ -287,7 +287,7 @@ def launch_napcat_and_verify():
 
     print(f"  启动 NapCat: {launcher}")
     print()
-    print("  ⚠️  即将弹出 QQ 登录窗口，请扫码登录")
+    print("  [!] 即将弹出 QQ 登录窗口，请扫码登录")
     print("  登录后 NapCat 会自动启动 HTTP API (端口 3000)")
     print()
     input("  按回车启动 NapCat...")
@@ -310,7 +310,7 @@ def launch_napcat_and_verify():
             )
             if r.status_code == 200 and r.json().get("retcode") == 0:
                 nickname = r.json()["data"]["nickname"]
-                print(f"  NapCat 已连接! QQ: {nickname} ✓")
+                print(f"  NapCat 已连接! QQ: {nickname} [OK]")
                 return True
         except Exception:
             pass
@@ -349,10 +349,22 @@ def test_email():
 
     html = build_briefing(mock)
     send_briefing(html, config)
-    print("  测试邮件已发送，请检查邮箱 ✓")
+    print("  测试邮件已发送，请检查邮箱 [OK]")
 
 
 def main():
+    # Force UTF-8 output to avoid UnicodeEncodeError on Windows GBK terminals
+    if hasattr(sys.stdout, 'reconfigure'):
+        try:
+            sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+        except Exception:
+            pass
+    if hasattr(sys.stderr, 'reconfigure'):
+        try:
+            sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+        except Exception:
+            pass
+
     print_banner()
 
     # Phase 1: Auto install
