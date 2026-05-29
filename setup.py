@@ -145,7 +145,7 @@ def install_napcat():
     print(f"  下载 NapCatQQ ({release.get('tag_name', 'latest')})...")
     zip_path = napcat_dir / "napcat.zip"
     try:
-        r = requests.get(download_url, timeout=300, stream=True)
+        r = requests.get(download_url, timeout=300, stream=True, verify=False)
         r.raise_for_status()
         total = int(r.headers.get("content-length", 0))
         downloaded = 0
