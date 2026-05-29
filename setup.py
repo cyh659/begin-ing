@@ -108,9 +108,11 @@ def install_napcat():
 
     # Download latest NapCat release info
     import requests
+    import urllib3
+    urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
     try:
         api_url = f"https://api.github.com/repos/{NAPCAT_REPO}/releases/latest"
-        resp = requests.get(api_url, timeout=15)
+        resp = requests.get(api_url, timeout=15, verify=False)
         resp.raise_for_status()
         release = resp.json()
     except Exception as e:
