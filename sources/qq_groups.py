@@ -1,25 +1,11 @@
 import logging
 import re
 import time
-from collections import Counter
 from datetime import datetime, timedelta
 
 import requests
-import jieba
 
 logger = logging.getLogger(__name__)
-
-# 中文停用词（常用高频词）
-STOPWORDS = set(
-    "的 了 在 是 我 有 和 就 不 人 都 一 一个 上 也 很 到 说 要 去 你 "
-    "会 着 没有 看 好 自己 这 他 她 它 们 那 什么 怎么 哪 为什么 可以 "
-    "啊 吧 吗 呢 哦 嗯 哈哈 呵呵 还是 如果 因为 所以 然后 但是 而且 "
-    "不过 已经 知道 觉得 感觉 应该 可能 也许 大概 这个 那个 这些 那些 "
-    "一个 一下 一些 有点 的话 一下 还是 大家 真的 今天 明天 昨天 "
-    "现在 刚才 刚刚 一直 总是 老是 经常 特别 非常 比较 很 太 好 多 少 "
-    "大 小 新 旧 高 低 快 慢 早 晚 出 来 去 进 过 到 做 干 搞 弄 "
-    "了 的 是 吗 么 吧 呢 啊 哦 嗯".split()
-)
 
 
 class NapCatError(Exception):
@@ -100,9 +86,12 @@ def fetch_group_messages(client, groups_config, state, max_messages=200):
                 "error": str(e),
                 "message_count": 0,
                 "active_members": 0,
-                "top_talkers": [],
-                "keyword_highlights": [],
-                "sample_messages": [],
+                "summary_text": "",
+                "priority": "low",
+                "priority_tag": "",
+                "topics": [],
+                "actions": [],
+                "conclusions": [],
             })
 
     return summaries
@@ -149,59 +138,33 @@ def _fetch_single_group(client, group_id, group_name, state, cutoff_ts, max_mess
             seen.add(mid)
             deduped.append(m)
 
-    # Generate summary
-    senders = Counter()
-    all_text = []
+    # Use structured summarizer
+    from sources.summarizer import generate_summary
 
+    summary_text, meta = generate_summary(deduped, max_chars=150)
+
+    # Count active senders for stats
+    senders = set()
     for m in deduped:
-        sender = _parse_sender(m.get("sender", {}))
-        nickname = sender.get("nickname", sender.get("user_id", "unknown"))
-        senders[nickname] += 1
-        raw = m.get("raw_message", "") or m.get("message", "")
-        all_text.append(raw)
-
-    # Top talkers
-    top_talkers = [f"{name}({cnt})" for name, cnt in senders.most_common(5)]
-
-    # Keyword extraction via jieba
-    combined_text = " ".join(all_text)
-    words = jieba.lcut(combined_text)
-    word_freq = Counter(
-        w.strip() for w in words
-        if len(w.strip()) >= 2 and w.strip() not in STOPWORDS
-    )
-    keywords = [w for w, _ in word_freq.most_common(10)]
-
-    # Sample messages: pick longest ones or those with question marks
-    interesting = sorted(
-        deduped,
-        key=lambda m: len(m.get("raw_message", "") or m.get("message", "")),
-        reverse=True,
-    )
-    samples = []
-    for m in interesting[:5]:
-        sender = _parse_sender(m.get("sender", {}))
-        nickname = sender.get("nickname", sender.get("user_id", "unknown"))
-        content = m.get("raw_message", "") or m.get("message", "")
-        if content:
-            samples.append({
-                "sender": nickname,
-                "content": content[:200],
-                "time": datetime.fromtimestamp(m.get("time", 0)).strftime("%H:%M"),
-            })
+        s = _parse_sender(m.get("sender", {}))
+        uid = s.get("user_id", s.get("nickname", "?"))
+        senders.add(uid)
 
     # Update state
     if current_seq > last_seq:
         gs["last_message_seq"] = current_seq
 
-    logger.info("Group %s: %d messages, %d members, keywords=%s", group_name, len(deduped), len(senders), keywords[:5])
+    logger.info("Group %s: %d msgs, %d members, priority=%s", group_name, meta['message_count'], len(senders), meta['priority'])
 
     return {
         "group_id": group_id,
         "group_name": group_name,
-        "message_count": len(deduped),
+        "message_count": meta['message_count'],
         "active_members": len(senders),
-        "top_talkers": top_talkers,
-        "keyword_highlights": keywords,
-        "sample_messages": samples,
+        "summary_text": summary_text,
+        "priority": meta['priority'],
+        "priority_tag": meta['priority_tag'],
+        "topics": meta['topics'],
+        "actions": meta['actions'],
+        "conclusions": meta['conclusions'],
     }

@@ -80,7 +80,7 @@ def _build_markdown(groups_summary, date_str):
     has_valid = False
 
     for g in groups_summary:
-        lines.append(f"### {g['group_name']} ({g['group_id']})")
+        lines.append(f"### {g['group_name']}")
         lines.append("")
 
         if g.get("error"):
@@ -89,25 +89,34 @@ def _build_markdown(groups_summary, date_str):
             continue
 
         has_valid = True
-        lines.append(f"- **消息数**: {g['message_count']} 条 | **活跃成员**: {g['active_members']} 人")
+
+        # Stats line
+        msg_count = g.get('message_count', 0)
+        member_count = g.get('active_members', 0)
+        lines.append(f"*{msg_count} 条消息 | {member_count} 人活跃*")
         lines.append("")
 
-        if g.get("top_talkers"):
-            tags = " ".join(f'<span class="tag">{t}</span>' for t in g["top_talkers"])
-            lines.append(f"- **活跃成员**: {tags}")
+        # Priority badge
+        priority_tag = g.get('priority_tag', '')
+        if priority_tag:
+            lines.append(f"**优先级: {priority_tag}**")
             lines.append("")
 
-        if g.get("keyword_highlights"):
-            tags = " ".join(f'<span class="tag">{k}</span>' for k in g["keyword_highlights"])
-            lines.append(f"- **热点关键词**: {tags}")
+        # Conclusions (from extractive summary)
+        conclusions = g.get('conclusions', [])
+        for c in conclusions:
+            lines.append(f"> {c[:100]}")
+        if conclusions:
             lines.append("")
 
-        if g.get("sample_messages"):
-            lines.append("- **精选消息**:")
-            lines.append("")
-            for msg in g["sample_messages"]:
-                lines.append(f"> **{msg['sender']}** ({msg['time']}): {msg['content']}")
-                lines.append("")
+        # Action items table
+        actions = g.get('actions', [])
+        if actions:
+            lines.append("| 发言人 | 行动项 | 截止时间 |")
+            lines.append("|--------|--------|----------|")
+            for a in actions:
+                deadline = a.get('deadline', '-') or '-'
+                lines.append(f"| {a['speaker']} | {a['task'][:40]} | {deadline} |")
             lines.append("")
 
     if not has_valid and not groups_summary:
@@ -116,6 +125,6 @@ def _build_markdown(groups_summary, date_str):
 
     lines.append("---")
     lines.append("")
-    lines.append(f'<div class="footer"> 本简报由 daily-briefing 自动生成于 {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}</div>')
+    lines.append(f'<div class="footer"> 本简报由 begin-ing 自动生成于 {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}</div>')
 
     return "\n".join(lines)
