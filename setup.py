@@ -355,6 +355,11 @@ def test_email():
 
 
 def main():
+    # Absolute minimal startup — confirm terminal works before anything else
+    print("", flush=True)
+    print("  Starting setup...", flush=True)
+    print("", flush=True)
+
     # Force UTF-8 output to avoid UnicodeEncodeError on Windows GBK terminals
     if hasattr(sys.stdout, 'reconfigure'):
         try:
