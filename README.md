@@ -10,13 +10,24 @@
 |------|------|------|
 | **Python** ≥ 3.9 | https://python.org → Download → 勾选 "Add to PATH" | 安装后终端输入 `python --version` 验证 |
 | **QQ NT 桌面版** | https://im.qq.com → Windows版 | 必须是新版 Electron QQ，不是 tim/轻聊版 |
-| **Git** | https://git-scm.com/download/win | `git --version` 验证 |
 
 ---
 
 ## 第一步：下载项目
 
-打开 **PowerShell** 或 **命令提示符**，输入：
+**方式一：直接下载 ZIP（推荐，无需装 Git）**
+
+1. 浏览器打开 https://github.com/cyh659/begin-ing
+2. 点击绿色 **Code** 按钮 → **Download ZIP**
+3. 把下载的 `begin-ing-main.zip` 解压到任意位置（比如桌面）
+4. 打开解压出的 `begin-ing-main` 文件夹
+5. 在文件夹**地址栏**里直接输入 `powershell` 然后回车
+
+```
+此时会弹出一个蓝色终端窗口，光标所在位置就是项目目录。
+```
+
+**方式二：用 Git 克隆**
 
 ```bash
 git clone https://github.com/cyh659/begin-ing.git
