@@ -10,7 +10,8 @@ import tempfile
 import time
 from pathlib import Path
 
-ROOT = Path(__file__).parent
+ROOT = Path(__file__).resolve().parent
+sys.path.insert(0, str(ROOT))
 NAPCAT_REPO = "NapNeko/NapCatQQ"
 CONFIG_TEMPLATE = """\
 qq:
@@ -51,10 +52,16 @@ def check_python():
 
 def install_deps():
     print("[2/7] 安装 Python 依赖...")
-    subprocess.check_call(
-        [sys.executable, "-m", "pip", "install", "-r", "requirements.txt", "--quiet"]
-    )
-    print("  依赖安装完成 ✓")
+    try:
+        subprocess.check_call(
+            [sys.executable, "-m", "pip", "install", "-r", "requirements.txt", "--quiet"]
+        )
+        print("  依赖安装完成 ✓")
+    except subprocess.CalledProcessError as e:
+        print(f"  依赖安装失败: {e}")
+        print("  请检查网络连接后重试，或手动执行:")
+        print(f"    {sys.executable} -m pip install -r requirements.txt")
+        sys.exit(1)
 
 
 def detect_os():
@@ -329,15 +336,14 @@ def test_email():
     mock = [{
         "group_id": g["group_id"],
         "group_name": g.get("name", ""),
-        "message_count": 0,
-        "active_members": 0,
-        "top_talkers": [],
-        "keyword_highlights": ["测试", "安装成功"],
-        "sample_messages": [{
-            "sender": "系统",
-            "content": "每日简报安装成功！明天开始你将在指定时间收到群消息摘要。",
-            "time": "00:00",
-        }],
+        "message_count": 1,
+        "active_members": 1,
+        "summary_text": "安装成功",
+        "priority": "low",
+        "priority_tag": "",
+        "topics": ["安装测试"],
+        "actions": [],
+        "conclusions": ["每日简报安装成功！明天开始你将在指定时间收到群消息摘要。"],
     } for g in config.get("qq", {}).get("groups", [])]
 
     html = build_briefing(mock)
