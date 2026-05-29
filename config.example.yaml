@@ -1,0 +1,21 @@
+qq:
+  napcat_http_url: "http://localhost:3000"
+  access_token: ""
+  groups:
+    - group_id: "123456789"
+      name: "工作群"
+
+zhihu:
+  top_n: 20
+  request_timeout: 15
+
+email:
+  smtp_server: "smtp.qq.com"
+  smtp_port: 465
+  sender: "your-email@qq.com"
+  password: "your-auth-code"
+  recipient: "your-email@qq.com"
+  subject_prefix: "每日简报"
+
+briefing:
+  max_qq_messages: 200

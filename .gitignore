@@ -1,0 +1,23 @@
+# 敏感配置 - 包含邮箱授权码
+config.yaml
+
+# 运行时状态
+state.json
+
+# Python
+venv/
+__pycache__/
+*.pyc
+*.pyo
+
+# 日志
+logs/
+
+# 临时文件
+preview.html
+test_zhihu.py
+test_pipeline.py
+
+# IDE
+.vscode/
+.idea/
