@@ -100,9 +100,10 @@ def install_napcat():
 
     qq_path = find_qq_nt()
     if not qq_path:
-        print("  未检测到 QQ NT，请先安装: https://im.qq.com")
-        print("  安装后重新运行 python setup.py")
-        sys.exit(1)
+        print("  未检测到 QQ NT，跳过 NapCat 自动安装。")
+        print("  请手动安装 QQ NT (https://im.qq.com) 和 NapCatQQ。")
+        print("  继续配置向导...")
+        return None
     print(f"  找到 QQ NT: {qq_path}")
 
     # Download latest NapCat release info
