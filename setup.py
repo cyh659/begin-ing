@@ -52,16 +52,25 @@ def check_python():
 
 def install_deps():
     print("[2/7] 安装 Python 依赖...")
+    print("  正在下载 (首次约1-3分钟，请耐心等待)...")
     try:
         subprocess.check_call(
-            [sys.executable, "-m", "pip", "install", "-r", "requirements.txt", "--quiet"]
+            [sys.executable, "-m", "pip", "install", "-r", "requirements.txt",
+             "-i", "https://pypi.tuna.tsinghua.edu.cn/simple", "--quiet"]
         )
-        print("  依赖安装完成 [OK]")
-    except subprocess.CalledProcessError as e:
-        print(f"  依赖安装失败: {e}")
-        print("  请检查网络连接后重试，或手动执行:")
-        print(f"    {sys.executable} -m pip install -r requirements.txt")
-        sys.exit(1)
+    except subprocess.CalledProcessError:
+        # Fallback to default PyPI
+        try:
+            print("  清华镜像下载失败，尝试官方源...")
+            subprocess.check_call(
+                [sys.executable, "-m", "pip", "install", "-r", "requirements.txt", "--quiet"]
+            )
+        except subprocess.CalledProcessError as e:
+            print(f"  依赖安装失败: {e}")
+            print("  请检查网络连接后重试，或手动执行:")
+            print(f"    {sys.executable} -m pip install -r requirements.txt")
+            sys.exit(1)
+    print("  依赖安装完成 [OK]")
 
 
 def detect_os():
