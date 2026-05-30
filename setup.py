@@ -292,21 +292,41 @@ def config_wizard():
     print(f"\n  配置已保存到 {config_path} [OK]")
 
 
-def launch_napcat_and_verify():
+def launch_napcat_and_verify(napcat_install_path=None):
     print("\n[6/7] 启动 NapCatQQ...")
     if sys.platform != "win32":
         print("  请手动启动 NapCatQQ 并登录 QQ")
         input("  登录后按回车继续...")
         return
 
-    napcat_info_path = Path(os.path.expanduser("~")) / ".napcat" / "install_info.json"
-    if not napcat_info_path.exists():
+    # Find NapCat installation directory
+    extract_dir = None
+
+    # 1. Use path passed from install_napcat()
+    if napcat_install_path == "already_running":
+        print("  NapCat API 已在运行，跳过启动。")
+        # Still verify connectivity below
+        extract_dir = None
+    elif napcat_install_path:
+        extract_dir = napcat_install_path
+
+    # 2. Check .napcat/install_info.json
+    if not extract_dir:
+        info_path = Path(os.path.expanduser("~")) / ".napcat" / "install_info.json"
+        if info_path.exists():
+            with open(info_path) as f:
+                extract_dir = json.load(f).get("extract_dir")
+
+    # 3. Check common manual install paths
+    if not extract_dir:
+        for p in [r"D:\NapCat\NapCat.44498.Shell", r"C:\NapCat"]:
+            if Path(p).exists():
+                extract_dir = p
+                break
+
+    if not extract_dir:
         print("  NapCat 未安装，跳过")
         return
-
-    with open(napcat_info_path) as f:
-        info = json.load(f)
-    extract_dir = info["extract_dir"]
 
     # Find launcher
     launcher = None
@@ -319,7 +339,8 @@ def launch_napcat_and_verify():
             break
 
     if not launcher:
-        print("  未找到 NapCat 启动器，请手动启动")
+        print(f"  未找到 NapCat 启动器 (搜索路径: {extract_dir})")
+        print("  请手动启动 NapCat")
         return
 
     print(f"  启动 NapCat: {launcher}")
@@ -406,7 +427,7 @@ def main():
     config_wizard()
 
     # Phase 3: Verify
-    launch_napcat_and_verify()
+    launch_napcat_and_verify(napcat_path)
     test_email()
 
     print()
