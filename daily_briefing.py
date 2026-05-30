@@ -67,18 +67,6 @@ def save_state(state, path="state.json"):
 
 
 def main():
-    # Force UTF-8 output to avoid UnicodeEncodeError on Windows GBK terminals
-    if hasattr(sys.stdout, 'reconfigure'):
-        try:
-            sys.stdout.reconfigure(encoding='utf-8', errors='replace')
-        except Exception:
-            pass
-    if hasattr(sys.stderr, 'reconfigure'):
-        try:
-            sys.stderr.reconfigure(encoding='utf-8', errors='replace')
-        except Exception:
-            pass
-
     parser = argparse.ArgumentParser(description="每日简报生成工具")
     parser.add_argument("--dry-run", action="store_true", help="生成简报但不发送邮件")
     parser.add_argument("--no-email", action="store_true", help="跳过邮件发送")
@@ -88,6 +76,9 @@ def main():
     log.info("===== 每日简报开始 =====")
 
     config = load_config()
+    if config is None:
+        log.error("config.yaml 为空或格式错误，请检查配置文件。")
+        sys.exit(1)
 
     # 1. Fetch QQ group messages
     state = load_state()
